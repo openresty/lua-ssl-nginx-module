@@ -1,0 +1,9 @@
+*~
+*.swp
+*.swo
+*.bak
+work/
+src/module.c
+go
+build111
+buildroot/
