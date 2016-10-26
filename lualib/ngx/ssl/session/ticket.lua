@@ -1,3 +1,6 @@
+-- Copyright (C) CloudFlare
+
+
 local _M = {}
 
 

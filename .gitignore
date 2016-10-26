@@ -7,3 +7,6 @@ src/module.c
 go
 build111
 buildroot/
+*.plist
+Makefile
+nginx

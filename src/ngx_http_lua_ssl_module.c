@@ -111,7 +111,7 @@ ngx_http_lua_ssl_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
     SSL_CTX                         **pctx;
     ngx_uint_t                        i;
     ngx_http_ssl_srv_conf_t          *sscf;
-    ngx_http_lua_ssl_main_conf_t  *lmcf;
+    ngx_http_lua_ssl_main_conf_t     *lmcf;
 
     sscf = ngx_http_conf_get_module_srv_conf(cf, ngx_http_ssl_module);
     if (sscf == NULL || sscf->ssl.ctx == NULL) {
