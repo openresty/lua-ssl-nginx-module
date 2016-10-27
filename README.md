@@ -11,16 +11,28 @@ http {
     lua_package_path "/path/to/lua-ssl-nginx-module/lualib/?.lua;;";
 
     lua_shared_dict my_cache 10m;
+    lua_shared_dict locks 1m;
 
     init_by_lua_block {
         require("ngx.ssl.session.ticket.key_rotation").init{
-            shdict_name = "my_cache",
+            locks_shdict_name = "locks",
+            cache_shdict_name = "my_cache",
             shm_cache_positive_ttl = 24 * 3600 * 1000,   -- in ms
             shm_cache_negative_ttl = 0,   -- in ms
             disable_shm_cache = false,  -- default false
             memc_key_prefix = "ticket-key/",
             ticket_ttl = 24 * 3600,   -- in sec
             key_rotation_period = 3600,   -- in sec
+
+            memc_host = "127.0.0.1",
+            memc_port = 11211,
+            memc_timeout = 500,  -- in ms
+            memc_conn_pool_size = 1,
+            memc_fetch_retries = 1,  -- optional, default 1
+            memc_fetch_retry_delay = 100, -- in ms, optional, default to 100 (ms)
+
+            memc_conn_max_idle_time = 1 * 1000,  -- in ms, for in-pool connections,
+                                                  -- optional, default to nil
         }
     }
 

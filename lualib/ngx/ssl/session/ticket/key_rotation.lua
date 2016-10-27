@@ -71,17 +71,37 @@ do
 end
 
 
-local fetch_key_from_memc
+local fetch_key_from_memc, locks_shdict_name
+local memc_host, memc_port, memc_timeout, memc_conn_pool_size
+local memc_fetch_retries, memc_fetch_retry_delay, memc_conn_max_idle_time
 do
     local memc_shdict = require "resty.memcached.shdict"
     local fetch_key_from_memc = memc_shdict.gen_memc_methods{
-                                     debug_logger = dlog,
-                                     warn_logger = warn,
-                                     error_logger = error_log,
-                                     disable_shdict = disable_shm_cache,
-                                     shdict_set = meta_shdict_set,
-                                     shdict_get = meta_shdict_get,
-                                 }
+        tag = "ticket_memc",
+
+        debug_logger = dlog,
+        warn_logger = warn,
+        error_logger = error_log,
+
+        locks_shdict_name = locks_shdict_name,
+
+        disable_shdict = disable_shm_cache,
+
+        shdict_set = meta_shdict_set,
+        shdict_get = meta_shdict_get,
+
+        memc_host = memc_host,
+        memc_port = memc_port,
+        memc_timeout = memc_timeout,
+        memc_conn_pool_size = memc_conn_pool_size,
+        memc_fetch_retries = memc_fetch_retries,
+        memc_fetch_retry_delay = memc_fetch_retry_delay,
+
+        memc_conn_max_idle_time = memc_conn_max_idle_time,
+
+        memc_store_retries = 0,
+        memc_store_retry_delay = 0,
+    }
 end
 
 
@@ -249,10 +269,20 @@ function _M.init(opts)
     time_slot = opts.key_rotation_period
     memc_key_prefix = opts.memc_key_prefix
 
-    shdict_name = opts.shdict_name
+    shdict_name = opts.cache_shdict_name
     shm_cache_pos_ttl = opts.shm_cache_positive_ttl
     shm_cache_neg_ttl = opts.shm_cache_negative_ttl
     disable_shm_cache = opts.disable_shm_cache
+    locks_shdict_name = opts.locks_shdict_name
+
+    memc_host = opts.memc_host
+    memc_port = opts.memc_port
+    memc_timeout = opts.memc_timeout
+    memc_conn_pool_size = opts.memc_conn_pool_size
+    memc_fetch_retries = opts.memc_fetch_retries
+    memc_fetch_retry_delay = opts.memc_fetch_retry_delay
+
+    memc_conn_max_idle_time = opts.memc_conn_max_idle_time
 
     local frandom = assert(io.open("/dev/urandom", "rb"))
     fallback_random_key = frandom:read(48)
