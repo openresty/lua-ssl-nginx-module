@@ -3,6 +3,45 @@ NAME
 
 lua-ssl-nginx-module - NGINX C module that extends `ngx_http_lua_module` for enhanced SSL/TLS capabilities
 
+Synopsis
+========
+
+```nginx
+http {
+    lua_package_path "/path/to/lua-ssl-nginx-module/lualib/?.lua;;";
+
+    lua_shared_dict my_cache 10m;
+
+    init_by_lua_block {
+        require("ngx.ssl.session.ticket.key_rotation").init{
+            shdict_name = "my_cache",
+            shm_cache_positive_ttl = 24 * 3600 * 1000,   -- in ms
+            shm_cache_negative_ttl = 0,   -- in ms
+            disable_shm_cache = false,  -- default false
+            memc_key_prefix = "ticket-key/",
+            ticket_ttl = 24 * 3600,   -- in sec
+            key_rotation_period = 3600,   -- in sec
+        }
+    }
+
+    init_worker_by_lua_block {
+        require("ngx.ssl.session.ticket.key_rotation").start_update_timer()
+    }
+
+    server {
+        listen 443 ssl;
+        server_name "foo.com";
+
+        locatoin / {
+        }
+
+        ...
+    }
+
+    ...
+}
+```
+
 Description
 ===========
 
@@ -18,14 +57,14 @@ Memcached server(s) with a key containing the timestamp every hour. It has the f
 advantages:
 
 1. We keep a list of keys inside the nginx server and only evict the oldest key every hour, which allows
-gradual phase-out of old keys.
+gradual phase-out of old keys. The size of the list depends on the `ticket_ttl` and `key_rotation_period` settings.
 1. The keys are updated automatically for all the virtual (SSL) servers defined in the `nginx.conf` file.
 1. No NGINX server reload or restart is needed. New keys are pulled from Memcached or
 Memcached-compatible servers automatically every hour.
 1. All network I/O is 100% nonblocking, that is, it never blocks any OS threads nor the nginx event loop, even on shm cache misses.
 1. All the core logic is in pure Lua, which is every easy to hack and adjust for special requirements.
 1. Uses shm cache for the keys so that only one worker needs to query the Memcached or
-Memcached-compatible servers.
+Memcached-compatible servers. The shm cache can be disabled though.
 
 Installation
 ============
