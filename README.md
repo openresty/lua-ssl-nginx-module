@@ -16,13 +16,16 @@ http {
     init_by_lua_block {
         require("ngx.ssl.session.ticket.key_rotation").init{
             locks_shdict_name = "locks",
+
+            disable_shm_cache = false,  -- default false
             cache_shdict_name = "my_cache",
             shm_cache_positive_ttl = 24 * 3600 * 1000,   -- in ms
             shm_cache_negative_ttl = 0,   -- in ms
-            disable_shm_cache = false,  -- default false
-            memc_key_prefix = "ticket-key/",
+
             ticket_ttl = 24 * 3600,   -- in sec
             key_rotation_period = 3600,   -- in sec
+
+            memc_key_prefix = "ticket-key/",
 
             memc_host = "127.0.0.1",
             memc_port = 11211,
