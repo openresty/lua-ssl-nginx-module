@@ -10,8 +10,16 @@ This NGINX module adds new Lua API and modules to OpenResty that enables more SS
 features like automatic TLS session ticket key manipulation and rotation (on the global
 network level).
 
+For global TLS session ticket key rotation, we require a central mechanism (could
+be in a dedicated NGINX or OpenResty server itself) to feed
+the TLS session ticket keys for each hour in Memcached servers or Memcached-compatible
+servers (like Kyoto Tycoon). Each NGINX or OpenResty server node simply queries the
+Memcached server(s) with a key containing the timestamp every hour.
+
 Installation
 ============
+
+This module depends on [lua-nginx-module](https://github.com/openresty/lua-nginx-module).
 
 If you are using the official nginx distribution, then build like this:
 
