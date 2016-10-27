@@ -3,6 +3,16 @@ NAME
 
 lua-ssl-nginx-module - NGINX C module that extends `ngx_http_lua_module` for enhanced SSL/TLS capabilities
 
+Table of Contents
+=================
+
+* [NAME](#name)
+* [Synopsis](#synopsis)
+* [Description](#description)
+* [Installation](#installation)
+* [Author](#author)
+* [Copyright and License](#copyright-and-license)
+
 Synopsis
 ========
 
@@ -113,6 +123,8 @@ Some of our Lua modules depend on the following Lua libraries:
 
 * [lua-resty-shdict-simple](https://github.com/openresty/lua-resty-shdict-simple)
 * [lua-resty-memcached-shdict](https://github.com/openresty/lua-resty-memcached-shdict)
+
+[Back to TOC](#table-of-contents)
 
 Author
 ======
