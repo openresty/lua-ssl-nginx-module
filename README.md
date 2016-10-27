@@ -20,6 +20,8 @@ advantages:
 1. All network I/O is 100% nonblocking, that is, it never blocks any OS threads nor the nginx event loop.
 1. Uses shm cache for the keys so that only one worker needs to query the Memcached or
 Memcached-compatible servers.
+1. We keep a list of keys and only evict the oldest key every hour, which allows
+gradual phase-out of old keys.
 
 Installation
 ============
