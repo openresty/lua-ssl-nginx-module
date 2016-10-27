@@ -3,6 +3,16 @@ NAME
 
 lua-ssl-nginx-module - NGINX C module that extends `ngx_http_lua_module` for enhanced SSL/TLS capabilities
 
+Table of Contents
+=================
+
+* [Name](#name)
+* [Synopsis](#synopsis)
+* [Description](#description)
+* [Installation](#installation)
+* [Author](#author)
+* [Copyright and License](#copyright-and-license)
+
 Synopsis
 ========
 
