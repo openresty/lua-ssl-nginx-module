@@ -14,7 +14,12 @@ For global TLS session ticket key rotation, we require an external mechanism (co
 be in a dedicated NGINX or OpenResty server itself, however) to feed
 the TLS session ticket keys for each hour in Memcached servers or Memcached-compatible
 servers (like Kyoto Tycoon). Each NGINX or OpenResty server node simply queries the
-Memcached server(s) with a key containing the timestamp every hour.
+Memcached server(s) with a key containing the timestamp every hour. It has the following
+advantages:
+
+1. All network I/O is 100% nonblocking, that is, it never blocks any OS threads nor the nginx event loop.
+1. Uses shm cache for the keys so that only one worker needs to query the Memcached or
+Memcached-compatible servers.
 
 Installation
 ============
