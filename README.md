@@ -39,6 +39,11 @@ directive like below:
 lua_package_path "/path/to/lua-ssl-nginx-module/lualib/?.lua;;";
 ```
 
+Some of our Lua modules depend on the following Lua libraries:
+
+* [lua-resty-shdict-simple](https://github.com/openresty/lua-resty-shdict-simple)
+* [lua-resty-memcached-shdict](https://github.com/openresty/lua-resty-memcached-shdict)
+
 Author
 ======
 
