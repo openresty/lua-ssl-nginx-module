@@ -55,8 +55,8 @@ Some of our Lua modules depend on the following Lua libraries:
 Author
 ======
 
-* Zi Lin, CloudFlare Inc.
-* Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
+* Zi Lin, Cloudflare Inc.
+* Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, Cloudflare Inc.
 
 [Back to TOC](#table-of-contents)
 
@@ -65,7 +65,7 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2016, by CloudFlare Inc.
+Copyright (C) 2016, by Cloudflare Inc.
 
 All rights reserved.
 
