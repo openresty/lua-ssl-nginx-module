@@ -47,9 +47,6 @@ http {
         listen 443 ssl;
         server_name "foo.com";
 
-        locatoin / {
-        }
-
         ...
     }
 
