@@ -113,6 +113,10 @@ local function ticket_key_index(now, offset)
 end
 
 
+-- get ticket key from shared dict. Ticket key should be protected
+-- by some key encryption key. The ticket key would be decrypted
+-- before being used. However here we leave it to users to finish
+-- it.
 local function shdict_get_and_decrypt(ctx, idx)
     local res, stale = meta_shdict_get(ctx, idx)
 
@@ -129,6 +133,9 @@ local function shdict_get_and_decrypt(ctx, idx)
     end
 
     local key = res
+    -- TODO: Decrypt res into 48-byte key
+    -- Ideally we should protect the ticket key with some encryption.
+    -- key = decrypt(key, key_encryption_key)
 
     if #key ~= 48 then
       return fail("malformed key: #key ", #key)
@@ -138,6 +145,10 @@ local function shdict_get_and_decrypt(ctx, idx)
 end
 
 
+-- get ticket key from memcached. Ticket key should be protected
+-- by some key encryption key. The ticket key would be decrypted
+-- before being used. However here we leave it to users to finish
+-- it.
 local function memc_get_and_decrypt(ctx, idx, offset)
     if DEBUG then
         dlog(ctx, "ticket key index: ", idx, " time slot offset: ", offset)
@@ -155,6 +166,9 @@ local function memc_get_and_decrypt(ctx, idx, offset)
     end
 
     local key = res
+    -- TODO: Decrypt res into 48-byte key
+    -- Ideally we should protect the ticket key with some encryption.
+    -- key = decrypt(key, key_encryption_key)
 
     if #key ~= 48 then
       return fail("malformed key: #key ", #key)
@@ -206,6 +220,25 @@ local function update_last_ticket_decryption_key(ctx, key)
 end
 
 
+-- check populates and rotates the ticket key list.
+-- When invoked, it does three things:
+-- 1. Look up a ticket key for current time slot and insert
+--    it to the beginning of the ticket key list.
+-- 2. Look up a ticket key for next time slot and replace the
+--    the last element of the key list with it.
+-- 3. Start a new timer for next check.
+-- Note we use rounded down timestamp based indexing in the shared
+-- memcached to store/fetch ticket key.
+-- Check ticket_key_index function for implementation of indexing.
+-- For example, using a time slot of 1000 second, we would round
+-- the timestamp down to the nearest 1000: 1001 -> 1000, 1987 -> 1000,
+-- and 2001 -> 2000. In practice we usually use 1 hour as slot size.
+--
+-- Timers across hosts are only loosely synchronized, there are cases that
+-- host A is waken up by its timer and host B is not.
+-- host A would start to use new key while session B is yet to load
+-- it. The problem is solved by preloading the key for the next slot,
+-- as described by item 2 above.
 local function check(premature, bootstrap)
     if premature then
         return
