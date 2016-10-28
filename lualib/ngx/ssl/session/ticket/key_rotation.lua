@@ -113,6 +113,10 @@ local function ticket_key_index(now, offset)
 end
 
 
+-- get ticket key from shared dict. Ticket key should be protected
+-- by some key encryption key. The ticket key would be decrypted
+-- before being used. However here we leave it to users to finish
+-- it.
 local function shdict_get_and_decrypt(ctx, idx)
     local res, stale = meta_shdict_get(ctx, idx)
 
@@ -129,6 +133,9 @@ local function shdict_get_and_decrypt(ctx, idx)
     end
 
     local key = res
+    -- TODO: Decrypt res into 48-byte key
+    -- Ideally we should protect the ticket key with some encryption.
+    -- key = decrypt(key, key_encryption_key)
 
     if #key ~= 48 then
       return fail("malformed key: #key ", #key)
@@ -138,6 +145,10 @@ local function shdict_get_and_decrypt(ctx, idx)
 end
 
 
+-- get ticket key from memcached. Ticket key should be protected
+-- by some key encryption key. The ticket key would be decrypted
+-- before being used. However here we leave it to users to finish
+-- it.
 local function memc_get_and_decrypt(ctx, idx, offset)
     if DEBUG then
         dlog(ctx, "ticket key index: ", idx, " time slot offset: ", offset)
@@ -155,6 +166,9 @@ local function memc_get_and_decrypt(ctx, idx, offset)
     end
 
     local key = res
+    -- TODO: Decrypt res into 48-byte key
+    -- Ideally we should protect the ticket key with some encryption.
+    -- key = decrypt(key, key_encryption_key)
 
     if #key ~= 48 then
       return fail("malformed key: #key ", #key)
