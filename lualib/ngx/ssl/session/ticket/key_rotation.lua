@@ -57,52 +57,10 @@ end
 
 local shdict_name, shm_cache_pos_ttl, shm_cache_neg_ttl, disable_shm_cache
 local meta_shdict_set, meta_shdict_get, disable_meta_shdict
-do
-    local meta_shdict = require "resty.shdict.simple"
-    meta_shdict_set, meta_shdict_get
-                        = meta_shdict.gen_shdict_methods{
-                              dict_name = shdict_name,
-                              debug_logger = dlog,
-                              warn_logger = warn,
-                              error_logger = error_log,
-                              positive_ttl = shm_cache_pos_ttl,
-                              negative_ttl = shm_cache_neg_ttl,
-                          }
-end
-
 
 local fetch_key_from_memc, locks_shdict_name
 local memc_host, memc_port, memc_timeout, memc_conn_pool_size
 local memc_fetch_retries, memc_fetch_retry_delay, memc_conn_max_idle_time
-do
-    local memc_shdict = require "resty.memcached.shdict"
-    fetch_key_from_memc = memc_shdict.gen_memc_methods{
-        tag = "ticket_memc",
-
-        debug_logger = dlog,
-        warn_logger = warn,
-        error_logger = error_log,
-
-        locks_shdict_name = locks_shdict_name,
-
-        disable_shdict = disable_shm_cache,
-
-        shdict_set = meta_shdict_set,
-        shdict_get = meta_shdict_get,
-
-        memc_host = memc_host,
-        memc_port = memc_port,
-        memc_timeout = memc_timeout,
-        memc_conn_pool_size = memc_conn_pool_size,
-        memc_fetch_retries = memc_fetch_retries,
-        memc_fetch_retry_delay = memc_fetch_retry_delay,
-
-        memc_conn_max_idle_time = memc_conn_max_idle_time,
-
-        memc_store_retries = 0,
-        memc_store_retry_delay = 0,
-    }
-end
 
 
 -- ticket keys are indexed by timestamps of time slots
@@ -181,7 +139,8 @@ end
 -- Store N+2 keys, including the current slot, the next slot and previous N
 -- slots' key.
 -- N = ticket_ttl / SEC_PER_HOUR
-local nkeys = floor(ticket_ttl / time_slot) + 2
+local nkeys
+
 local function update_ticket_encryption_key(ctx, key)
     if not key then
         if DEBUG then
@@ -301,6 +260,51 @@ function _M.init(opts)
     local frandom = assert(io.open("/dev/urandom", "rb"))
     fallback_random_key = frandom:read(48)
     frandom:close()
+
+
+    nkeys = floor(ticket_ttl / time_slot) + 2
+    do
+        local meta_shdict = require "resty.shdict.simple"
+        meta_shdict_set, meta_shdict_get = meta_shdict.gen_shdict_methods{
+            dict_name = shdict_name,
+            debug_logger = dlog,
+            warn_logger = warn,
+            error_logger = error_log,
+            positive_ttl = shm_cache_pos_ttl,
+            negative_ttl = shm_cache_neg_ttl,
+        }
+    end
+
+    do
+        local memc_shdict = require "resty.memcached.shdict"
+        fetch_key_from_memc = memc_shdict.gen_memc_methods{
+            tag = "ticket_memc",
+
+            debug_logger = dlog,
+            warn_logger = warn,
+            error_logger = error_log,
+
+            locks_shdict_name = locks_shdict_name,
+
+            disable_shdict = disable_shm_cache,
+
+            shdict_set = meta_shdict_set,
+            shdict_get = meta_shdict_get,
+
+            memc_host = memc_host,
+            memc_port = memc_port,
+            memc_timeout = memc_timeout,
+            memc_conn_pool_size = memc_conn_pool_size,
+            memc_fetch_retries = memc_fetch_retries,
+            memc_fetch_retry_delay = memc_fetch_retry_delay,
+
+            memc_conn_max_idle_time = memc_conn_max_idle_time,
+
+            memc_store_retries = 0,
+            memc_store_retry_delay = 0,
+        }
+    end
+
 
     local ctx = {}
 
