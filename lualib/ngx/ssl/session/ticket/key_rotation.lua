@@ -76,7 +76,7 @@ local memc_host, memc_port, memc_timeout, memc_conn_pool_size
 local memc_fetch_retries, memc_fetch_retry_delay, memc_conn_max_idle_time
 do
     local memc_shdict = require "resty.memcached.shdict"
-    local fetch_key_from_memc = memc_shdict.gen_memc_methods{
+    fetch_key_from_memc = memc_shdict.gen_memc_methods{
         tag = "ticket_memc",
 
         debug_logger = dlog,
