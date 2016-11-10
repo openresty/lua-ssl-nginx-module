@@ -55,12 +55,8 @@ local function warn(...)
 end
 
 
-local shdict_name, shm_cache_pos_ttl, shm_cache_neg_ttl, disable_shm_cache
-local meta_shdict_set, meta_shdict_get, disable_meta_shdict
-
-local fetch_key_from_memc, locks_shdict_name
-local memc_host, memc_port, memc_timeout, memc_conn_pool_size
-local memc_fetch_retries, memc_fetch_retry_delay, memc_conn_max_idle_time
+local meta_shdict_set, meta_shdict_get
+local fetch_key_from_memc
 
 -- Store N+2 keys, including the current slot, the next slot and previous N
 -- slots' key.
@@ -242,20 +238,20 @@ function _M.init(opts)
     time_slot = opts.key_rotation_period
     memc_key_prefix = opts.memc_key_prefix
 
-    shdict_name = opts.cache_shdict_name
-    shm_cache_pos_ttl = opts.shm_cache_positive_ttl
-    shm_cache_neg_ttl = opts.shm_cache_negative_ttl
-    disable_shm_cache = opts.disable_shm_cache
-    locks_shdict_name = opts.locks_shdict_name
+    local shdict_name = opts.cache_shdict_name
+    local shm_cache_pos_ttl = opts.shm_cache_positive_ttl
+    local shm_cache_neg_ttl = opts.shm_cache_negative_ttl
+    local disable_shm_cache = opts.disable_shm_cache
+    local locks_shdict_name = opts.locks_shdict_name
 
-    memc_host = opts.memc_host
-    memc_port = opts.memc_port
-    memc_timeout = opts.memc_timeout
-    memc_conn_pool_size = opts.memc_conn_pool_size
-    memc_fetch_retries = opts.memc_fetch_retries
-    memc_fetch_retry_delay = opts.memc_fetch_retry_delay
+    local memc_host = opts.memc_host
+    local memc_port = opts.memc_port
+    local memc_timeout = opts.memc_timeout
+    local memc_conn_pool_size = opts.memc_conn_pool_size
+    local memc_fetch_retries = opts.memc_fetch_retries
+    local memc_fetch_retry_delay = opts.memc_fetch_retry_delay
 
-    memc_conn_max_idle_time = opts.memc_conn_max_idle_time
+    local memc_conn_max_idle_time = opts.memc_conn_max_idle_time
 
     local frandom = assert(io.open("/dev/urandom", "rb"))
     fallback_random_key = frandom:read(48)
@@ -314,7 +310,7 @@ function _M.init(opts)
     local curr_key_index = ticket_key_index(now, 0)
     local curr_key
 
-    if not disable_meta_shdict then
+    if not disable_shm_cache then
         curr_key = shdict_get_and_decrypt(ctx, curr_key_index)
     end
 
