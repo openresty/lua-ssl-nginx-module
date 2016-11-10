@@ -62,6 +62,11 @@ local fetch_key_from_memc, locks_shdict_name
 local memc_host, memc_port, memc_timeout, memc_conn_pool_size
 local memc_fetch_retries, memc_fetch_retry_delay, memc_conn_max_idle_time
 
+-- Store N+2 keys, including the current slot, the next slot and previous N
+-- slots' key.
+-- N = ticket_ttl / SEC_PER_HOUR
+local nkeys
+
 
 -- ticket keys are indexed by timestamps of time slots
 local function ticket_key_index(now, offset)
@@ -135,11 +140,6 @@ local function memc_get_and_decrypt(ctx, idx, offset)
     return key
 end
 
-
--- Store N+2 keys, including the current slot, the next slot and previous N
--- slots' key.
--- N = ticket_ttl / SEC_PER_HOUR
-local nkeys
 
 local function update_ticket_encryption_key(ctx, key)
     if not key then
@@ -261,7 +261,6 @@ function _M.init(opts)
     fallback_random_key = frandom:read(48)
     frandom:close()
 
-
     nkeys = floor(ticket_ttl / time_slot) + 2
     do
         local meta_shdict = require "resty.shdict.simple"
@@ -304,7 +303,6 @@ function _M.init(opts)
             memc_store_retry_delay = 0,
         }
     end
-
 
     local ctx = {}
 
