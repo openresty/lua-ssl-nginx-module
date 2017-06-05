@@ -262,6 +262,7 @@ function _M.init(opts)
         local meta_shdict = require "resty.shdict.simple"
         meta_shdict_set, meta_shdict_get = meta_shdict.gen_shdict_methods{
             dict_name = shdict_name,
+            disable_shdict = disable_shm_cache,
             debug_logger = dlog,
             warn_logger = warn,
             error_logger = error_log,
