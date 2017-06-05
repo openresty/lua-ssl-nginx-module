@@ -96,7 +96,7 @@ local function shdict_get_and_decrypt(ctx, idx)
     -- Ideally we should protect the ticket key with some encryption.
     -- key = decrypt(key, key_encryption_key)
 
-    if #key ~= 48 then
+    if #key ~= 48 or #key ~= 80 then
       return fail("malformed key: #key ", #key)
     end
 
@@ -129,7 +129,7 @@ local function memc_get_and_decrypt(ctx, idx, offset)
     -- Ideally we should protect the ticket key with some encryption.
     -- key = decrypt(key, key_encryption_key)
 
-    if #key ~= 48 then
+    if #key ~= 48 or #key ~= 80 then
       return fail("malformed key: #key ", #key)
     end
 
