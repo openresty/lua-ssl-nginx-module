@@ -18,6 +18,9 @@ local pseudo_random = math.random
 local new_timer = ngx.timer.at
 local update_enc_key = ticket_key.update_ticket_encryption_key
 local update_last_dec_key = ticket_key.update_last_ticket_decryption_key
+local assert = assert
+local require = require
+local io = io
 
 
 local DEBUG = ngx.config.debug
