@@ -57,6 +57,12 @@ http {
         listen 443 ssl;
         server_name "foo.com";
 
+        # SSL session ticket key sharing
+        # Put a dummy key to trigger external ticket key usage in nginx/OpenSSL
+        # init_by_lua will replace this dummy key with existing cached keys
+        # or a random key if cached keys are not available.
+        ssl_session_ticket_key  dummy.key;
+
         ...
     }
 
