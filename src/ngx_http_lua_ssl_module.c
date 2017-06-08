@@ -226,12 +226,25 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
      * key. */
     if (keys->nelts > 0) {
         pkey = keys->elts;
-        if (ngx_memcmp(pkey->name, key, 16) == 0 &&
-            ngx_memcmp(pkey->aes_key, key + 16, 16) == 0 &&
-            ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
-        {
-            dd("duplicate ticket key");
-            return NGX_OK;
+        if (ngx_strlen(key) == 48) {
+            dd("key size is 48");
+            if (ngx_memcmp(pkey->name, key, 16) == 0 &&
+                ngx_memcmp(pkey->aes_key, key + 16, 16) == 0 &&
+                ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
+            {
+                    dd("duplicate ticket key");
+                    return NGX_OK;
+            }
+
+        } else if (ngx_strlen(key) == 80) {
+            dd("key size is 80");
+            if (ngx_memcmp(pkey->name, key, 16) == 0 &&
+                ngx_memcmp(pkey->aes_key, key + 16, 32) == 0 &&
+                ngx_memcmp(pkey->hmac_key, key + 48, 32) == 0 )
+            {
+                    dd("duplicate ticket key");
+                    return NGX_OK;
+            }
         }
     }
 
@@ -255,9 +268,15 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
     }
 
     /* copy the new key */
-    ngx_memcpy(pkey->name, key, 16);
-    ngx_memcpy(pkey->aes_key, key + 16, 16);
-    ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    if (ngx_strlen(key) == 48){
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 16);
+        ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    } else if (ngx_strlen(key) == 80){
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 32);
+        ngx_memcpy(pkey->hmac_key, key + 48, 32);
+    }
 
     return NGX_OK;
 
@@ -303,9 +322,15 @@ ngx_http_lua_ffi_update_last_ticket_decryption_key(SSL_CTX *ctx,
     pkey = &pkey[keys->nelts-1];
 
     dd("replace the last key");
-    ngx_memcpy(pkey->name, key, 16);
-    ngx_memcpy(pkey->aes_key, key + 16, 16);
-    ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    if (ngx_strlen(key) == 48){
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 16);
+        ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    } else if (ngx_strlen(key) == 80){
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 32);
+        ngx_memcpy(pkey->hmac_key, key + 48, 32);
+    }
 
     return NGX_OK;
 

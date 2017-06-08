@@ -46,6 +46,9 @@ http {
 
             memc_conn_max_idle_time = 1 * 1000,  -- in ms, for in-pool connections,
                                                   -- optional, default to nil
+            key_length = 48   -- in bytes, optional, default 48, possible 80 if using with
+                              -- nginx > 1.12.0, any other values it will
+                              -- fallback to default length
         }
     }
 
@@ -61,6 +64,7 @@ http {
         # Put a dummy key to trigger external ticket key usage in nginx/OpenSSL
         # init_by_lua* will replace this dummy key with existing cached keys
         # or a random key if cached keys are not available.
+        # If key_length was set to 80 bytes in init_by_lua*, the dummy key needs to be 80 bytes too.
         ssl_session_ticket_key  dummy.key;
 
         ...
