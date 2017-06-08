@@ -161,7 +161,7 @@ ngx_http_lua_ffi_get_ssl_ctx_list(ngx_cycle_t *cycle, SSL_CTX **buf)
 {
     SSL_CTX                             **pctx;
     ngx_uint_t                            i;
-    ngx_http_lua_ssl_main_conf_t      *lmcf;
+    ngx_http_lua_ssl_main_conf_t         *lmcf;
 
     lmcf = ngx_http_cycle_get_module_main_conf(cycle,
                                                ngx_http_lua_ssl_module);
@@ -226,9 +226,9 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
      * key. */
     if (keys->nelts > 0) {
         pkey = keys->elts;
-        if (ngx_memcmp(pkey->name, key, 16) == 0 &&
-            ngx_memcmp(pkey->aes_key, key + 16, 16) == 0 &&
-            ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
+        if (ngx_memcmp(pkey->name, key, 16) == 0
+            && ngx_memcmp(pkey->aes_key, key + 16, 16) == 0
+            && ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
         {
             dd("duplicate ticket key");
             return NGX_OK;
@@ -250,8 +250,8 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
     dd("rotate ticket keys");
     pkey = keys->elts;
     for (i = keys->nelts - 1; i >= 1; i--) {
-        dd("pkeys[i] = %p", &pkey[i-1]);
-        pkey[i] = pkey[i-1];
+        dd("pkeys[i] = %p", &pkey[i - 1]);
+        pkey[i] = pkey[i - 1];
     }
 
     /* copy the new key */
@@ -300,7 +300,7 @@ ngx_http_lua_ffi_update_last_ticket_decryption_key(SSL_CTX *ctx,
 
     /* pkey points to the last one of the keys */
     pkey = keys->elts;
-    pkey = &pkey[keys->nelts-1];
+    pkey = &pkey[keys->nelts - 1];
 
     dd("replace the last key");
     ngx_memcpy(pkey->name, key, 16);
