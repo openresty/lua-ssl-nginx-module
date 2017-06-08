@@ -183,7 +183,8 @@ ngx_http_lua_ffi_get_ssl_ctx_list(SSL_CTX **buf)
 
 int
 ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
-    const unsigned char  *key, const ngx_uint_t nkeys,  char **err)
+    const unsigned char  *key, const ngx_uint_t nkeys,
+    const unsigned int key_length, char **err)
 {
 #ifdef SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB
 
@@ -226,12 +227,25 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
      * key. */
     if (keys->nelts > 0) {
         pkey = keys->elts;
-        if (ngx_memcmp(pkey->name, key, 16) == 0
-            && ngx_memcmp(pkey->aes_key, key + 16, 16) == 0
-            && ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
-        {
-            dd("duplicate ticket key");
-            return NGX_OK;
+        if (key_length == 48) {
+            dd("key size is 48");
+            if (ngx_memcmp(pkey->name, key, 16) == 0
+                && ngx_memcmp(pkey->aes_key, key + 16, 16) == 0
+                && ngx_memcmp(pkey->hmac_key, key + 32, 16) == 0)
+            {
+                dd("duplicate ticket key");
+                return NGX_OK;
+            }
+
+        } else if (key_length == 80) {
+            dd("key size is 80");
+            if (ngx_memcmp(pkey->name, key, 16) == 0
+                && ngx_memcmp(pkey->aes_key, key + 16, 32) == 0
+                && ngx_memcmp(pkey->hmac_key, key + 48, 32) == 0)
+            {
+                dd("duplicate ticket key");
+                return NGX_OK;
+            }
         }
     }
 
@@ -255,12 +269,22 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
     }
 
     /* copy the new key */
-    ngx_memcpy(pkey->name, key, 16);
-    ngx_memcpy(pkey->aes_key, key + 16, 16);
-    ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    if (key_length == 48) {
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 16);
+        ngx_memcpy(pkey->hmac_key, key + 32, 16);
 #if (nginx_version >= 1011008)
     pkey->size = 48;
 #endif
+
+    } else if (key_length == 80) {
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 32);
+        ngx_memcpy(pkey->hmac_key, key + 48, 32);
+#if (nginx_version >= 1011008)
+    pkey->size = 80;
+#endif
+    }
 
     return NGX_OK;
 
@@ -275,7 +299,7 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
 
 int
 ngx_http_lua_ffi_update_last_ticket_decryption_key(SSL_CTX *ctx,
-    const unsigned char *key, char **err)
+    const unsigned char *key, const unsigned int key_length, char **err)
 {
     ngx_array_t                        *keys;
     ngx_ssl_session_ticket_key_t       *pkey;
@@ -306,12 +330,22 @@ ngx_http_lua_ffi_update_last_ticket_decryption_key(SSL_CTX *ctx,
     pkey = &pkey[keys->nelts - 1];
 
     dd("replace the last key");
-    ngx_memcpy(pkey->name, key, 16);
-    ngx_memcpy(pkey->aes_key, key + 16, 16);
-    ngx_memcpy(pkey->hmac_key, key + 32, 16);
+    if (key_length == 48) {
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 16);
+        ngx_memcpy(pkey->hmac_key, key + 32, 16);
 #if (nginx_version >= 1011008)
     pkey->size = 48;
 #endif
+
+    } else if (key_length == 80) {
+        ngx_memcpy(pkey->name, key, 16);
+        ngx_memcpy(pkey->aes_key, key + 16, 32);
+        ngx_memcpy(pkey->hmac_key, key + 48, 32);
+#if (nginx_version >= 1011008)
+    pkey->size = 80;
+#endif
+    }
 
     return NGX_OK;
 

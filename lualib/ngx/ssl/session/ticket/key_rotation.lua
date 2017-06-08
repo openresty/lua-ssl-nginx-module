@@ -99,7 +99,7 @@ local function shdict_get_and_decrypt(ctx, idx)
     -- Ideally we should protect the ticket key with some encryption.
     -- key = decrypt(key, key_encryption_key)
 
-    if #key ~= 48 then
+    if #key ~= 48 and #key ~= 80 then
       return fail("malformed key: #key ", #key)
     end
 
@@ -132,7 +132,7 @@ local function memc_get_and_decrypt(ctx, idx, offset)
     -- Ideally we should protect the ticket key with some encryption.
     -- key = decrypt(key, key_encryption_key)
 
-    if #key ~= 48 then
+    if #key ~= 48 and #key ~= 80 then
       return fail("malformed key: #key ", #key)
     end
 
@@ -256,8 +256,14 @@ function _M.init(opts)
 
     local memc_conn_max_idle_time = opts.memc_conn_max_idle_time
 
+    local key_length = opts.key_length
+
     local frandom = assert(io.open("/dev/urandom", "rb"))
-    fallback_random_key = frandom:read(48)
+    -- if key_length is not set or is different from 48 or 80, use default 48 bytes
+    if not key_length or (key_length ~= 48 and key_length ~= 80) then
+        key_length = 48
+    end
+    fallback_random_key = frandom:read(key_length)
     frandom:close()
 
     nkeys = floor(ticket_ttl / time_slot) + 2
