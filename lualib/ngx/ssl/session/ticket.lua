@@ -24,9 +24,10 @@ ffi.cdef[[
 int ngx_http_lua_ffi_get_ssl_ctx_count(void *cycle);
 int ngx_http_lua_ffi_get_ssl_ctx_list(void *cycle, void **buf);
 int ngx_http_lua_ffi_update_ticket_encryption_key(void *ctx,
-     const unsigned char *key, unsigned int nkeys, char **err);
+     const unsigned char *key, const unsigned int nkeys,
+     const unsigned int key_length, char **err);
 int ngx_http_lua_ffi_update_last_ticket_decryption_key(void *ctx,
-     const unsigned char *key, char **err);
+     const unsigned char *key, const unsigned int key_length, char **err);
 ]]
 
 
@@ -70,6 +71,7 @@ function _M.update_ticket_encryption_key(key, nkeys)
          local rc = C.ngx_http_lua_ffi_update_ticket_encryption_key(ctx,
                                                                     key,
                                                                     nkeys,
+                                                                    #key,
                                                                     errmsg)
          if rc ~= 0 then -- not NGX_OK
              return nil, ffi_str(errmsg[0])
@@ -96,6 +98,7 @@ function _M.update_last_ticket_decryption_key(key)
     for _, ctx in ipairs(ctxs) do
          local rc = C.ngx_http_lua_ffi_update_last_ticket_decryption_key(ctx,
                                                                          key,
+                                                                         #key,
                                                                          errmsg)
          if rc ~= 0 then -- not NGX_OK
              return nil, ffi_str(errmsg[0])
