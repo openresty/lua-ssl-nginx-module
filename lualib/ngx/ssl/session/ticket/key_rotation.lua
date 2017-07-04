@@ -327,7 +327,7 @@ function _M.init(opts)
 
         for i = -previous_slots, 0 do
             local idx = ticket_key_index(now, i)
-            local key = shdict_get_and_decrypt(ctx, idx, i)
+            local key = shdict_get_and_decrypt(ctx, idx)
             update_ticket_encryption_key(ctx, key)
          end
     end
