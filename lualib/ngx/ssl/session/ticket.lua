@@ -10,7 +10,6 @@ local base = require "resty.core.base"
 local ffi_cast = ffi.cast
 local table_new = require "table.new"
 local ffi_str = ffi.string
-local cycle = getfenv(0).__ngx_cycle
 
 
 local get_string_buf = base.get_string_buf
@@ -21,8 +20,8 @@ local ptr_size = ffi.sizeof(void_ptr_type)
 
 
 ffi.cdef[[
-int ngx_http_lua_ffi_get_ssl_ctx_count(void *cycle);
-int ngx_http_lua_ffi_get_ssl_ctx_list(void *cycle, void **buf);
+int ngx_http_lua_ffi_get_ssl_ctx_count(void);
+int ngx_http_lua_ffi_get_ssl_ctx_list(void **buf);
 int ngx_http_lua_ffi_update_ticket_encryption_key(void *ctx,
      const unsigned char *key, unsigned int nkeys, char **err);
 int ngx_http_lua_ffi_update_last_ticket_decryption_key(void *ctx,
@@ -31,11 +30,11 @@ int ngx_http_lua_ffi_update_last_ticket_decryption_key(void *ctx,
 
 
 local function get_ssl_ctx_list()
-    local n = C.ngx_http_lua_ffi_get_ssl_ctx_count(cycle)
+    local n = C.ngx_http_lua_ffi_get_ssl_ctx_count()
     local sz = ptr_size * n
     local raw_buf = get_string_buf(sz)
     local buf = ffi_cast(void_ptr_ptr_type, raw_buf)
-    local rc = C.ngx_http_lua_ffi_get_ssl_ctx_list(cycle, buf)
+    local rc = C.ngx_http_lua_ffi_get_ssl_ctx_list(buf)
     if rc == 0 then  -- NGX_OK
         local ret = table_new(n, 0)
         for i = 1, n do

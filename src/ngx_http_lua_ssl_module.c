@@ -142,11 +142,11 @@ ngx_http_lua_ssl_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 
 
 int
-ngx_http_lua_ffi_get_ssl_ctx_count(ngx_cycle_t *cycle)
+ngx_http_lua_ffi_get_ssl_ctx_count(void)
 {
     ngx_http_lua_ssl_main_conf_t    *lmcf;
 
-    lmcf = ngx_http_cycle_get_module_main_conf(cycle,
+    lmcf = ngx_http_cycle_get_module_main_conf(ngx_cycle,
                                                ngx_http_lua_ssl_module);
     if (lmcf == NULL) {
         return 0;
@@ -157,13 +157,13 @@ ngx_http_lua_ffi_get_ssl_ctx_count(ngx_cycle_t *cycle)
 
 
 int
-ngx_http_lua_ffi_get_ssl_ctx_list(ngx_cycle_t *cycle, SSL_CTX **buf)
+ngx_http_lua_ffi_get_ssl_ctx_list(SSL_CTX **buf)
 {
     SSL_CTX                             **pctx;
     ngx_uint_t                            i;
     ngx_http_lua_ssl_main_conf_t         *lmcf;
 
-    lmcf = ngx_http_cycle_get_module_main_conf(cycle,
+    lmcf = ngx_http_cycle_get_module_main_conf(ngx_cycle,
                                                ngx_http_lua_ssl_module);
 
     if (lmcf == NULL) {
