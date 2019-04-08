@@ -20,7 +20,7 @@ local ptr_size = ffi.sizeof(void_ptr_type)
 
 
 ffi.cdef[[
-int ngx_http_lua_ffi_get_ssl_ctx_count();
+int ngx_http_lua_ffi_get_ssl_ctx_count(void);
 int ngx_http_lua_ffi_get_ssl_ctx_list(void **buf);
 int ngx_http_lua_ffi_update_ticket_encryption_key(void *ctx,
      const unsigned char *key, unsigned int nkeys, char **err);

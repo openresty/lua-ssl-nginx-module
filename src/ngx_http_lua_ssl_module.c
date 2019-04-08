@@ -142,7 +142,7 @@ ngx_http_lua_ssl_merge_srv_conf(ngx_conf_t *cf, void *parent, void *child)
 
 
 int
-ngx_http_lua_ffi_get_ssl_ctx_count()
+ngx_http_lua_ffi_get_ssl_ctx_count(void)
 {
     ngx_http_lua_ssl_main_conf_t    *lmcf;
 
