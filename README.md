@@ -150,6 +150,12 @@ make
 sudo make install
 ```
 
+You can also compile this module as a dynamic module, by using the
+`--add-dynamic-module=/path/to/lua-ssl-nginx-module` instead of `--add-module`
+on the `./configure` command line above. Then load the module in `nginx.conf`
+via the [`load_module`](https://nginx.org/en/docs/ngx_core_module.html#load_module)
+directive.
+
 Otherwise, if you are using the OpenResty distribution, build it as follows:
 
 ```bash
