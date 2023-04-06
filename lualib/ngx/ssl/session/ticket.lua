@@ -23,9 +23,10 @@ ffi.cdef[[
 int ngx_http_lua_ffi_get_ssl_ctx_count(void);
 int ngx_http_lua_ffi_get_ssl_ctx_list(void **buf);
 int ngx_http_lua_ffi_update_ticket_encryption_key(void *ctx,
-     const unsigned char *key, unsigned int nkeys, char **err);
+     const unsigned char *key, const unsigned int nkeys,
+     const unsigned int key_length, char **err);
 int ngx_http_lua_ffi_update_last_ticket_decryption_key(void *ctx,
-     const unsigned char *key, char **err);
+     const unsigned char *key, const unsigned int key_length, char **err);
 ]]
 
 
@@ -61,7 +62,7 @@ function _M.update_ticket_encryption_key(key, nkeys)
     -- OpenSSL session ticket key is 48 bytes.
     -- key structure:
     -- 16 bytes key name, 16 bytes AES key, 16 bytes HMAC key.
-    if not key or #key ~= 48 then
+    if not key or (#key ~= 48 and #key ~= 80) then
         return nil, 'invalid ticket key'
     end
 
@@ -69,6 +70,7 @@ function _M.update_ticket_encryption_key(key, nkeys)
          local rc = C.ngx_http_lua_ffi_update_ticket_encryption_key(ctx,
                                                                     key,
                                                                     nkeys,
+                                                                    #key,
                                                                     errmsg)
          if rc ~= 0 then -- not NGX_OK
              return nil, ffi_str(errmsg[0])
@@ -88,13 +90,14 @@ function _M.update_last_ticket_decryption_key(key)
     end
 
     -- OpenSSL session ticket key is 48 bytes.
-    if not key or #key ~= 48 then
+    if not key or (#key ~= 48 and #key ~= 80) then
         return nil, 'invalid ticket key'
     end
 
     for _, ctx in ipairs(ctxs) do
          local rc = C.ngx_http_lua_ffi_update_last_ticket_decryption_key(ctx,
                                                                          key,
+                                                                         #key,
                                                                          errmsg)
          if rc ~= 0 then -- not NGX_OK
              return nil, ffi_str(errmsg[0])
