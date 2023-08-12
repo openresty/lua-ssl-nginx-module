@@ -24,6 +24,10 @@
 #include <openssl/tls1.h>
 #include <ngx_event_openssl.h>
 
+#if (nginx_version < 1023002)
+#define ngx_ssl_ticket_key_t ngx_ssl_session_ticket_key_t
+#define ngx_ssl_ticket_keys_index ngx_ssl_session_ticket_keys_index
+#endif
 
 static void *ngx_http_lua_ssl_create_srv_conf(ngx_conf_t *cf);
 static char *ngx_http_lua_ssl_merge_srv_conf(ngx_conf_t *cf, void *parent,
@@ -190,7 +194,7 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
 
     ngx_uint_t                          i;
     ngx_array_t                        *keys;
-    ngx_ssl_session_ticket_key_t       *pkey;
+    ngx_ssl_ticket_key_t               *pkey;
 
 
     /* Insert key into the beginning of ticket key array as the
@@ -202,19 +206,19 @@ ngx_http_lua_ffi_update_ticket_encryption_key(SSL_CTX *ctx,
         return NGX_ERROR;
     }
 
-    keys = SSL_CTX_get_ex_data(ctx, ngx_ssl_session_ticket_keys_index);
+    keys = SSL_CTX_get_ex_data(ctx, ngx_ssl_ticket_keys_index);
 
     if (keys == NULL) {
         dd("initialize ticket key array");
         /* initialize keys */
         keys = ngx_array_create(ngx_cycle->pool, nkeys,
-                                sizeof(ngx_ssl_session_ticket_key_t));
+                                sizeof(ngx_ssl_ticket_key_t));
         if (keys == NULL) {
             *err = "failed to allocate ticket key array";
             return NGX_ERROR;
         }
 
-        if (SSL_CTX_set_ex_data(ctx, ngx_ssl_session_ticket_keys_index, keys)
+        if (SSL_CTX_set_ex_data(ctx, ngx_ssl_ticket_keys_index, keys)
             == 0)
         {
             *err = "failed to set ticket keys";
@@ -301,14 +305,14 @@ int
 ngx_http_lua_ffi_update_last_ticket_decryption_key(SSL_CTX *ctx,
     const unsigned char *key, const unsigned int key_length, char **err)
 {
-    ngx_array_t                        *keys;
-    ngx_ssl_session_ticket_key_t       *pkey;
+    ngx_array_t                *keys;
+    ngx_ssl_ticket_key_t       *pkey;
 
 #ifdef SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB
 
     /* Insert key into the end of ticket key array as the decrytpion key.*/
     dd("start adding extra decryption ticket key");
-    keys = SSL_CTX_get_ex_data(ctx, ngx_ssl_session_ticket_keys_index);
+    keys = SSL_CTX_get_ex_data(ctx, ngx_ssl_ticket_keys_index);
 
     if (keys == NULL) {
         *err = "uninitialized ticket key list";
